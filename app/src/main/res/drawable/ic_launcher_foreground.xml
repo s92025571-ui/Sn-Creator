@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Outer Hexagonal 3D Shield Rim -->
+    <path
+        android:pathData="M54,20L82,36L82,72L54,88L26,72L26,36Z"
+        android:strokeWidth="2.2">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:endX="82"
+                android:endY="88"
+                android:startX="26"
+                android:startY="20"
+                android:type="linear">
+                <item android:color="#241346" android:offset="0.0" />
+                <item android:color="#0E0B1A" android:offset="1.0" />
+            </gradient>
+        </aapt:attr>
+        <aapt:attr name="android:strokeColor">
+            <gradient
+                android:endX="82"
+                android:endY="88"
+                android:startX="26"
+                android:startY="20"
+                android:type="linear">
+                <item android:color="#C084FC" android:offset="0.0" />
+                <item android:color="#7C3AED" android:offset="0.5" />
+                <item android:color="#4C1D95" android:offset="1.0" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Stylized 3D Faceted 'S' -->
+    <path
+        android:pathData="M50,37L36,37L33,42L33,50L37,53L47,55L47,63L34,63L32,68L49,68L52,63L52,52L48,49L38,47L38,42L51,42Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:endX="52"
+                android:endY="68"
+                android:startX="33"
+                android:startY="37"
+                android:type="linear">
+                <item android:color="#F3E8FF" android:offset="0.0" />
+                <item android:color="#C084FC" android:offset="0.45" />
+                <item android:color="#8B5CF6" android:offset="1.0" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Stylized 3D Faceted 'N' -->
+    <path
+        android:pathData="M56,68L56,37L61,37L70,56L70,37L75,37L75,68L70,68L61,49L61,68Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:endX="75"
+                android:endY="68"
+                android:startX="56"
+                android:startY="37"
+                android:type="linear">
+                <item android:color="#E9D5FF" android:offset="0.0" />
+                <item android:color="#A855F7" android:offset="0.55" />
+                <item android:color="#6D28D9" android:offset="1.0" />
+            </gradient>
+        </aapt:attr>
+    </path>
+</vector>

@@ -1,0 +1,13 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // SN Creator enforces Zero-Client-Database-Exposure:
+    // 1. Generated content history is strictly prohibited from persistence.
+    // 2. Daily 10-generation quotas (Asia/Karachi) are enforced exclusively on the trusted backend (Cloudflare D1 / SQLite).
+    // Therefore, all direct client Firestore reads and writes are denied unconditionally.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

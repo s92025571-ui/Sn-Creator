@@ -1,0 +1,45 @@
+# Android & Gradle build outputs
+.gradle/
+build/
+app/build/
+captures/
+.externalNativeBuild/
+.cxx/
+*.apk
+*.aab
+*.ap_
+*.dex
+
+# Local machine & IDE config
+local.properties
+.idea/
+*.iml
+.DS_Store
+
+# Never commit Firebase Android credentials, keystores, or private secrets
+app/google-services.json
+*.jks
+*.keystore
+*.p12
+service-account*.json
+
+# Backend secrets & local state
+.env
+.env.local
+.env.*.local
+backend/.dev.vars
+backend/wrangler.toml
+backend/.wrangler/
+*.sqlite
+*.sqlite-journal
+*.db
+
+# Web companion / Node build artifacts
+node_modules/
+dist/
+server.js
+
+# Keep official Gradle Wrapper JAR tracked for reproducible GitHub Actions builds
+!gradle/wrapper/gradle-wrapper.jar
+!app/google-services.json.example
+!backend/wrangler.toml.example

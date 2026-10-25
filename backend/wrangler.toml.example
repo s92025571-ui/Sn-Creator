@@ -1,0 +1,21 @@
+# Copy this file to backend/wrangler.toml and fill in your D1 database_id and FIREBASE_PROJECT_ID.
+# NEVER put GEMINI_API_KEY in this file! Set GEMINI_API_KEY exclusively via:
+#   npx wrangler secret put GEMINI_API_KEY
+#
+# Verified Free Tier: Cloudflare Workers Free + D1 Free requires NO paid subscription and NO credit card
+# when you only enable Workers and D1 (avoid enabling R2 or paid add-ons).
+
+name = "sn-creator-api"
+main = "src/index.ts"
+compatibility_date = "2025-02-04"
+compatibility_flags = ["nodejs_compat"]
+
+[vars]
+FIREBASE_PROJECT_ID = "enduring-agent-dt8c4"
+GEMINI_MODEL = "gemini-3.8-flash"
+DAILY_QUOTA_LIMIT = "10"
+
+[[d1_databases]]
+binding = "QUOTA_DB"
+database_name = "sn-creator-quota-db"
+database_id = "REPLACE_WITH_YOUR_D1_DATABASE_UUID"

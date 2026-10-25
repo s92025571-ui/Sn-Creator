@@ -1,0 +1,6 @@
+{
+  "name": "SN Creator",
+  "description": "AI-powered gaming content creation suite for Android creators with titles, hashtags, voice-over scripts, thumbnail prompts, and video ideas.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">SN Creator</string>
+    <string name="offline_error_message">Internet connection required for AI generation.</string>
+    <string name="whatsapp_prefill_message">Hello SN Creator team, I need help with the app.</string>
+</resources>
