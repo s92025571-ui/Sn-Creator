@@ -1,0 +1,184 @@
+name: Build SN Creator Android APK
+
+on:
+workflow_dispatch:
+push:
+branches:
+- main
+- master
+
+permissions:
+contents: read
+
+concurrency:
+group: sn-creator-android-build-${{ github.ref }}
+cancel-in-progress: false
+
+jobs:
+build-android:
+name: Locate, Test and Build Android APK
+runs-on: ubuntu-latest
+timeout-minutes: 45
+
+steps:
+  - name: Checkout repository
+    uses: actions/checkout@v4
+
+  - name: Locate Android project and Gradle wrapper
+    id: locate
+    shell: bash
+    run: |
+      set -euo pipefail
+
+      echo "Repository root:"
+      pwd
+      echo "Repository files:"
+      ls -la
+
+      WRAPPER="$(find . -type f -name gradlew \
+        -not -path '*/.gradle/*' \
+        -not -path '*/build/*' \
+        -print -quit)"
+
+      if [ -z "$WRAPPER" ]; then
+        echo "::error::No Gradle wrapper (gradlew) found. Ensure the complete Android project was pushed to GitHub."
+        echo "The workflow cannot build an Android project without its Gradle wrapper or a known compatible Gradle installation."
+        exit 1
+      fi
+
+      PROJECT_DIR="$(dirname "$WRAPPER")"
+      PROJECT_DIR="$(cd "$PROJECT_DIR" && pwd)"
+
+      if [ ! -f "$PROJECT_DIR/settings.gradle" ] && \
+         [ ! -f "$PROJECT_DIR/settings.gradle.kts" ]; then
+        echo "::error::Gradle wrapper found, but no settings.gradle or settings.gradle.kts exists beside it."
+        exit 1
+      fi
+
+      echo "project_dir=$PROJECT_DIR" >> "$GITHUB_OUTPUT"
+      echo "Found project: $PROJECT_DIR"
+
+      chmod +x "$PROJECT_DIR/gradlew"
+
+      echo "Gradle wrapper properties:"
+      if [ -f "$PROJECT_DIR/gradle/wrapper/gradle-wrapper.properties" ]; then
+        cat "$PROJECT_DIR/gradle/wrapper/gradle-wrapper.properties"
+      else
+        echo "::error::Gradle wrapper properties are missing."
+        exit 1
+      fi
+
+  - name: Set up JDK
+    uses: actions/setup-java@v4
+    with:
+      distribution: temurin
+      java-version: '17'
+      cache: gradle
+
+  - name: Set up Android SDK
+    uses: android-actions/setup-android@v3
+
+  - name: Accept Android SDK licenses
+    shell: bash
+    run: yes | sdkmanager --licenses || true
+
+  - name: Validate Gradle project
+    working-directory: ${{ steps.locate.outputs.project_dir }}
+    shell: bash
+    run: |
+      set -euo pipefail
+      ./gradlew --version
+      ./gradlew projects --stacktrace
+
+  - name: Run unit tests
+    id: tests
+    continue-on-error: true
+    working-directory: ${{ steps.locate.outputs.project_dir }}
+    shell: bash
+    run: |
+      set -o pipefail
+      ./gradlew test --stacktrace --no-daemon
+
+  - name: Build debug APK
+    id: build
+    continue-on-error: true
+    working-directory: ${{ steps.locate.outputs.project_dir }}
+    shell: bash
+    run: |
+      set -o pipefail
+      ./gradlew assembleDebug --stacktrace --no-daemon
+
+  - name: Locate APK files
+    id: apk
+    if: always()
+    shell: bash
+    env:
+      PROJECT_DIR: ${{ steps.locate.outputs.project_dir }}
+    run: |
+      set -euo pipefail
+
+      if [ -z "${PROJECT_DIR:-}" ] || [ ! -d "$PROJECT_DIR" ]; then
+        echo "found=false" >> "$GITHUB_OUTPUT"
+        exit 0
+      fi
+
+      APK_LIST="$RUNNER_TEMP/sn-creator-apks.txt"
+
+      find "$PROJECT_DIR" -type f -name '*.apk' \
+        -not -path '*/intermediates/*' \
+        -not -path '*/tmp/*' \
+        -print > "$APK_LIST"
+
+      if [ -s "$APK_LIST" ]; then
+        echo "found=true" >> "$GITHUB_OUTPUT"
+        echo "APK files found:"
+        cat "$APK_LIST"
+      else
+        echo "found=false" >> "$GITHUB_OUTPUT"
+        echo "No APK was produced."
+      fi
+
+  - name: Upload APK artifact
+    if: steps.apk.outputs.found == 'true'
+    uses: actions/upload-artifact@v4
+    with:
+      name: SN-Creator-Android-APK
+      path: |
+        **/build/outputs/apk/**/*.apk
+      if-no-files-found: error
+      retention-days: 14
+
+  - name: Save build logs and diagnostics
+    if: always()
+    uses: actions/upload-artifact@v4
+    with:
+      name: SN-Creator-Build-Diagnostics
+      path: |
+        **/build/reports/tests/
+        **/build/reports/problems/
+        **/build/outputs/logs/
+      if-no-files-found: ignore
+      retention-days: 7
+
+  - name: Report build result
+    if: always()
+    shell: bash
+    env:
+      TEST_OUTCOME: ${{ steps.tests.outcome }}
+      BUILD_OUTCOME: ${{ steps.build.outcome }}
+      APK_FOUND: ${{ steps.apk.outputs.found }}
+    run: |
+      echo "Unit tests: ${TEST_OUTCOME:-not run}"
+      echo "APK build: ${BUILD_OUTCOME:-not run}"
+      echo "APK located: ${APK_FOUND:-unknown}"
+
+      if [ "$BUILD_OUTCOME" != "success" ] || [ "$APK_FOUND" != "true" ]; then
+        echo "::error::APK build did not complete successfully. Open the failed step logs, fix the underlying source or dependency issue, and rerun the workflow."
+        exit 1
+      fi
+
+      if [ "$TEST_OUTCOME" != "success" ]; then
+        echo "::warning::The APK was built, but unit tests did not all pass. Review the diagnostics artifact before release."
+      fi
+
+      echo "SN Creator debug APK build completed. Download SN-Creator-Android-APK from this workflow run's Artifacts section."
